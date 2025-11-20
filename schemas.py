@@ -1,48 +1,58 @@
 """
-Database Schemas
+Database Schemas for Hospital Management
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
+Each Pydantic model below maps to a MongoDB collection with the
+collection name equal to the lowercase class name.
 
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Examples:
+- Patient -> "patient"
+- Doctor -> "doctor"
+- Appointment -> "appointment"
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
+from datetime import datetime
 
-# Example schemas (replace with your own):
 
-class User(BaseModel):
+class Patient(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    Patients collection schema
+    Collection: "patient"
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    first_name: str = Field(..., description="Patient first name")
+    last_name: str = Field(..., description="Patient last name")
+    email: Optional[EmailStr] = Field(None, description="Contact email")
+    phone: Optional[str] = Field(None, description="Contact phone number")
+    date_of_birth: Optional[str] = Field(None, description="YYYY-MM-DD")
+    gender: Optional[str] = Field(None, description="Male, Female, Other")
+    address: Optional[str] = Field(None, description="Home address")
+    insurance_provider: Optional[str] = Field(None, description="Insurance company name")
+    insurance_number: Optional[str] = Field(None, description="Insurance policy number")
+    notes: Optional[str] = Field(None, description="Additional notes")
 
-class Product(BaseModel):
+
+class Doctor(BaseModel):
     """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
+    Doctors collection schema
+    Collection: "doctor"
     """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+    first_name: str = Field(..., description="Doctor first name")
+    last_name: str = Field(..., description="Doctor last name")
+    email: Optional[EmailStr] = Field(None, description="Contact email")
+    phone: Optional[str] = Field(None, description="Contact phone number")
+    department: str = Field(..., description="Department or specialty")
+    title: Optional[str] = Field(None, description="MD, DO, RN, etc.")
 
-# Add your own schemas here:
-# --------------------------------------------------
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Appointment(BaseModel):
+    """
+    Appointments collection schema
+    Collection: "appointment"
+    """
+    patient_id: str = Field(..., description="Patient ObjectId string")
+    doctor_id: str = Field(..., description="Doctor ObjectId string")
+    start_time: datetime = Field(..., description="Appointment start time (ISO 8601)")
+    duration_minutes: int = Field(30, ge=5, le=240, description="Appointment duration in minutes")
+    reason: Optional[str] = Field(None, description="Reason for visit")
+    status: str = Field("scheduled", description="scheduled|completed|cancelled")
